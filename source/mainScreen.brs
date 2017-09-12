@@ -1,33 +1,35 @@
 sub mainScreen()
     
-    m.screen.Clear(&h000000FF)
+	m.sound_select.Trigger(50)
+	
+	background = [
+		CreateObject("roBitmap", "pkg:/images/wallpaper1.jpg"),
+		CreateObject("roBitmap", "pkg:/images/wallpaper2.jpg"),
+		CreateObject("roBitmap", "pkg:/images/wallpaper3.jpg"),
+		CreateObject("roBitmap", "pkg:/images/wallpaper4.jpg"),
+		CreateObject("roBitmap", "pkg:/images/wallpaper5.jpg")
+	]
+	
+	font = CreateObject("roFontRegistry")
+    font.Register("pkg:/fonts/Gothic-Bold.ttf")
+	font_50 = font.GetFont("Century Gothic", 50, True, False)
+	
+	menu = ["Телеканалы", "Фильмы", "Мультфильми", "Сериалы", "Настройки"]
+	
+	content = {
+		background : background,
+		logo : m.logo,
+		select : CreateObject("roBitmap", "pkg:/images/main_menu_sel.png"),
+		font : font_50,
+		color_text : &hebebebff,
+		color_text_sel : &h52D681ff,
+		menu : menu
+	}
     
-    m.background_1 = CreateObject("roBitmap", "pkg:/images/wallpaper1.jpg")
-    m.background_1.SetAlphaEnable(true)
-    m.background_2 = CreateObject("roBitmap", "pkg:/images/wallpaper2.jpg")
-    m.background_2.SetAlphaEnable(true)
-    m.background_3 = CreateObject("roBitmap", "pkg:/images/wallpaper3.jpg")
-    m.background_3.SetAlphaEnable(true)
-    m.background_4 = CreateObject("roBitmap", "pkg:/images/wallpaper4.jpg")
-    m.background_4.SetAlphaEnable(true)
-    m.background_5 = CreateObject("roBitmap", "pkg:/images/wallpaper5.jpg")
-    m.background_5.SetAlphaEnable(true)
+	index = 0
+    last_index = 0
     
-    m.screen.DrawScaledObject(0, 0, 1, 1, m.background_1, &hFFFFFF40)
-    m.screen.DrawObject(100, 100, m.logo)
-    m.screen.Finish()
-    
-    m.fontc = m.fonts.GetFont("Open Sans", 50, True, False)
-    
-    m.xml = CreateObject("roXmlElement")
-    if not m.xml.Parse(ReadAsciiFile("pkg:/xml/main_menu.xml")) then print "Parse Fail" : return
-    m.punkt_1 = m.xml.GetNamedElements("element")[0].GetText()
-    m.punkt_2 = m.xml.GetNamedElements("element")[1].GetText()
-    m.punkt_3 = m.xml.GetNamedElements("element")[2].GetText()
-    m.punkt_4 = m.xml.GetNamedElements("element")[3].GetText()
-    m.punkt_5 = m.xml.GetNamedElements("element")[4].GetText()
-    
-    DrawMenu()
+    DrawMenu(index, content)
  
     while(true)
         msg = wait(0, m.port) 
@@ -35,111 +37,53 @@ sub mainScreen()
             button = msg.GetInt()
             if((button = 3) or (button = 5)) then
                 m.sound_change.Trigger(50)
-                m.index = m.index + 1
-                if(m.index > 4) then
-                    m.index = 0
+                index = index + 1
+                if(index > 4) then
+                    index = 0
                 end if
             else if((button = 2) or (button = 4)) then
                 m.sound_change.Trigger(50)
-                m.index = m.index - 1
-                if(m.index < 0) then
-                    m.index = 4
+                index = index - 1
+                if(index < 0) then
+                    index = 4
                 end if           
             else if(button = 6) then
                 m.sound_select.Trigger(50)
-                if(m.index = 4) then
+                if(index = 4) then
                     SettingsMenu()
+				else if(index = 0)
+					TvChanels()	
                 end if
+				last_index = 5
             end if
-        end if
-        
-        if(m.index <> m.last_index) then
-            m.last_index = m.index
-            m.screen.Clear(&h000000FF)
-            if(m.index = 0) then
-                m.screen.DrawScaledObject(0, 0, 1, 1, m.background_1, &hFFFFFF40)
-            end if
-            if(m.index = 1) then
-                m.screen.DrawScaledObject(0, 0, 1, 1, m.background_2, &hFFFFFF40)
-            end if
-            if(m.index = 2) then
-                m.screen.DrawScaledObject(0, 0, 1, 1, m.background_3, &hFFFFFF40)
-            end if
-            if(m.index = 3) then
-                m.screen.DrawScaledObject(0, 0, 1, 1, m.background_4, &hFFFFFF40)
-            end if
-            if(m.index = 4) then
-                m.screen.DrawScaledObject(0, 0, 1, 1, m.background_5, &hFFFFFF40)
-            end if
-            m.screen.DrawObject(100, 100, m.logo)
-            m.screen.Finish()
-            DrawMenu()   
+        end if     
+        if(index <> last_index) then
+            last_index = index
+            DrawMenu(index, content)   
         end if
     end while
 
 end sub
 
-function DrawMenu()
+function DrawMenu(index, content)
 
-    fw = m.fontc.GetOneLineWidth(m.punkt_1, m.screen.GetWidth())
-    x% = (m.screen.GetWidth() - fw) / 2
-    if(m.index = 0) then
-        m.screen.DrawText(m.punkt_1, x%, 100, &h47b427ff, m.fontc)
-        DrawSelect()
-    else
-        m.screen.DrawText(m.punkt_1, x%, 100, &hebebebff, m.fontc)
-    end if
-    
-    fw = m.fontc.GetOneLineWidth(m.punkt_2, m.screen.GetWidth())
-    x% = (m.screen.GetWidth() - fw) / 2
-    if(m.index = 1) then
-        m.screen.DrawText(m.punkt_2, x%, 200, &h47b427ff, m.fontc)
-        DrawSelect()
-    else
-        m.screen.DrawText(m.punkt_2, x%, 200, &hebebebff, m.fontc)
-    end if
-    
-    fw = m.fontc.GetOneLineWidth(m.punkt_3, m.screen.GetWidth())
-    x% = (m.screen.GetWidth() - fw) / 2
-    if(m.index = 2) then
-        m.screen.DrawText(m.punkt_3, x%, 300, &h47b427ff, m.fontc)
-        DrawSelect()
-    else
-        m.screen.DrawText(m.punkt_3, x%, 300, &hebebebff, m.fontc)
-    end if
-    
-    fw = m.fontc.GetOneLineWidth(m.punkt_4, m.screen.GetWidth())
-    x% = (m.screen.GetWidth() - fw) / 2
-    if(m.index = 3) then
-        m.screen.DrawText(m.punkt_4, x%, 400, &h47b427ff, m.fontc)
-        DrawSelect()
-    else
-        m.screen.DrawText(m.punkt_4, x%, 400, &hebebebff, m.fontc)
-    end if
-    
-    fw = m.fontc.GetOneLineWidth(m.punkt_5, m.screen.GetWidth())
-    x% = (m.screen.GetWidth() - fw) / 2
-    if(m.index = 4) then
-        m.screen.DrawText(m.punkt_5, x%, 500, &h47b427ff, m.fontc)
-        DrawSelect()
-    else
-        m.screen.DrawText(m.punkt_5, x%, 500, &hebebebff, m.fontc)
-    end if
-    
-    m.screen.Finish()
-    
-end function
+	m.screen.Clear(&h000000FF)
+	
+	m.screen.DrawScaledObject(0, 0, 1, 1, content.background[index], &hFFFFFF40)	
+    m.screen.DrawObject(100, 100, content.logo)
+	
+	for i = 0 to 4 step 1
+		color = content.color_text
+		if(index = i) then
+			color = content.color_text_sel
+			m.screen.DrawObject(400, 85 + index * 100, content.select)
+		end if
+		fw = content.font.GetOneLineWidth(content.menu[i], m.screen.GetWidth())
+		x% = (m.screen.GetWidth() - fw) / 2
+		y% = i * 100 + 100
+		m.screen.DrawText(content.menu[i], x%, y%, color, content.font)	
+	end for
 
-function DrawSelect()
-
-    y = m.index * 100
-    m.screen.DrawLine(400, 90 + y, 880, 90 + y, &h47b427ff)
-    m.screen.DrawLine(400, 190 + y, 880, 190 + y, &h47b427ff)
-    m.screen.DrawLine(400, 90 + y, 400, 190 + y, &h47b427ff)
-    m.screen.DrawLine(880, 90 + y, 880, 190 + y, &h47b427ff)
-    m.screen.DrawLine(401, 91 + y, 879, 91 + y, &h47b427ff)
-    m.screen.DrawLine(401, 189 + y, 879, 189 + y, &h47b427ff)
-    m.screen.DrawLine(401, 91 + y, 401, 189 + y, &h47b427ff)
-    m.screen.DrawLine(879, 91 + y, 879, 189 + y, &h47b427ff)
-    
+	m.screen.SwapBuffers()
+  
 end function

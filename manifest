@@ -1,8 +1,9 @@
-title=smarttv
+title=TVoKo
 major_version=1
 minor_version=0
-build_version=279
-mm_icon_focus_hd=pkg:/locale/default/images/icon_focus_hd.png
-mm_icon_focus_sd=pkg:/locale/default/images/icon_focus_sd.png
-mm_icon_side_hd=pkg:/locale/default/images/icon_side_hd.png
-mm_icon_side_sd=pkg:/locale/default/images/icon_side_sd.png
+build_version=850
+mm_icon_focus_hd=pkg:/images/focusHD.png
+mm_icon_focus_sd=pkg:/images/focusSD.png
+subtitle=100 Channels from Russia, Ukraine and other CIS countries
+mm_icon_side_hd=pkg:/images/nofocusSD.png
+mm_icon_side_sd=pkg:/images/nofocusSD.png

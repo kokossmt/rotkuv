@@ -1,127 +1,144 @@
 sub SettingsMenu()
 
-    m.screen.Clear(&h000000FF)
+    background = CreateObject("roBitmap", "pkg:/images/settings_bg.jpg")
+    background.SetAlphaEnable(true)
+		
+	icon = [
+		CreateObject("roBitmap", "pkg:/images/set_avatar.png"),
+		CreateObject("roBitmap", "pkg:/images/set_notebook.png"),
+		CreateObject("roBitmap", "pkg:/images/set_tablet.png"),
+		CreateObject("roBitmap", "pkg:/images/set_umbrella.png")
+	]
+	
+	icon_sel = [
+		CreateObject("roBitmap", "pkg:/images/set_avatar_sel.png"),
+		CreateObject("roBitmap", "pkg:/images/set_notebook_sel.png"),
+		CreateObject("roBitmap", "pkg:/images/set_tablet_sel.png"),
+		CreateObject("roBitmap", "pkg:/images/set_umbrella_sel.png")
+	]
     
-    m.background = CreateObject("roBitmap", "pkg:/images/settings_bg.jpg")
-    m.background.SetAlphaEnable(true)
-
-    m.avatar = CreateObject("roBitmap", "pkg:/images/set_avatar.png")
-    m.notebook = CreateObject("roBitmap", "pkg:/images/set_notebook.png")
-    m.tablet = CreateObject("roBitmap", "pkg:/images/set_tablet.png")    
-    m.umbrella = CreateObject("roBitmap", "pkg:/images/set_umbrella.png")
-    m.avatar_sel = CreateObject("roBitmap", "pkg:/images/set_avatar_sel.png")
-    m.notebook_sel = CreateObject("roBitmap", "pkg:/images/set_notebook_sel.png")
-    m.tablet_sel = CreateObject("roBitmap", "pkg:/images/set_tablet_sel.png")    
-    m.umbrella_sel = CreateObject("roBitmap", "pkg:/images/set_umbrella_sel.png")
+	font = CreateObject("roFontRegistry")
+    font.Register("pkg:/fonts/Gothic-Bold.ttf")
+	font_26 = font.GetFont("Century Gothic", 26, True, False)
+	font_16 = font.GetFont("Century Gothic", 16, True, False)
+	
+	menu = [
+		{row_1 : "Вход", row_2 : ""},
+		{row_1 : "Подписки", row_2 : ""},
+		{row_1 : "Родительский", row_2 : "контроль"},
+		{row_1 : "Ввести", row_2 : "промокод"}
+	]
+			
+	coment = [
+		{row_1 : "Смотрите фильмы на всех", row_2 : "устройствах"},
+		{row_1 : "Подписки и другие услуги", row_2 : ""},
+		{row_1 : "Отключён", row_2 : ""},
+		{row_1 : "Введите промокод для", row_2 : "активации подписки"}
+	]
+	
+	content = {
+		background : background,
+		logo : m.logo
+		icon : icon,
+		icon_sel : icon_sel,
+		form : CreateObject("roBitmap", "pkg:/images/setting_form.png"),
+		form_sel : CreateObject("roBitmap", "pkg:/images/setting_form_sel.png"),
+		line : CreateObject("roBitmap", "pkg:/images/set_line.png"),
+		font_menu : font_26,
+		font_coment : font_16,
+		color_text : &hebebebff,
+		color_text_sel :  &h000000ff,
+		menu : menu,
+		coment : coment
+	}
     
-    m.form = CreateObject("roBitmap", "pkg:/images/setting_form.png")
-    m.form_sel = CreateObject("roBitmap", "pkg:/images/setting_form_sel.png")
+    index = 0
+    last_index = 0
     
-    m.fonta = m.fonts.GetFont("Open Sans", 28, True, False)
-    
-    m.set_xml = CreateObject("roXmlElement")
-    if not m.set_xml.Parse(ReadAsciiFile("pkg:/xml/settings_menu.xml")) then print "Parse Fail" : return
-    m.set_punkt_1 = m.set_xml.GetNamedElements("element")[0].GetText()
-    m.set_punkt_2 = m.set_xml.GetNamedElements("element")[1].GetText()
-    m.set_punkt_3 = m.set_xml.GetNamedElements("element")[2].GetText()
-    m.set_punkt_4 = m.set_xml.GetNamedElements("element")[3].GetText()
-    
-    m.set_index = 0
-    m.last_set_index = 0
-    
-    DrawSettingMenu()
-    DrawSettingSelect()
+    DrawSettingMenu(index, content)
     
     while(true)
+	
         msg = wait(0, m.port) 
         if type(msg) = "roUniversalControlEvent" then
             button = msg.GetInt()
             if((button = 3) or (button = 5)) then
                 m.sound_change.Trigger(50)
-                m.set_index = m.set_index + 1
-                if(m.set_index > 3) then
-                    m.set_index = 0
+                index = index + 1
+                if(index > 3) then
+                    index = 0
                 end if
             else if((button = 2) or (button = 4)) then
                 m.sound_change.Trigger(50)
-                m.set_index = m.set_index - 1
-                if(m.set_index < 0) then
-                    m.set_index = 3
+                index = index - 1
+                if(index < 0) then
+                    index = 3
                 end if         
             else if(button = 6) then
                 m.sound_select.Trigger(50)
             else if(button = 0) then
                 m.sound_select.Trigger(50)
-                mainScreen()
-            end if          
-            if(m.set_index <>  m.last_set_index) then
-                m.last_set_index = m.set_index
-                DrawSettingMenu()
-                DrawSettingSelect()       
+                return
+            end if
+			
+            if(m.set_index <>  last_index) then
+                last_index = index
+                DrawSettingMenu(index, content)      
             end if
         end if
+		
     end while
 
 end sub
 
-function DrawSettingMenu()
+function DrawSettingMenu(index, content)
 
-    m.screen.DrawScaledObject(0, 0, 1, 1, m.background, &hFFFFFFFF)
-    m.screen.DrawObject(100, 100, m.logo)
+	m.screen.Clear(&h000000FF)
 
-    m.screen.DrawObject(137, 420, m.avatar)
-    m.screen.DrawObject(451, 420, m.notebook)
-    m.screen.DrawObject(765, 420, m.tablet)
-    m.screen.DrawObject(1079, 420, m.umbrella)
+    m.screen.DrawScaledObject(0, 0, 1, 1, content.background, &hFFFFFFFF)
+    m.screen.DrawObject(100, 100, content.logo)
+	
+	for i = 0 to 3 step 1
+	
+		x% = 314 * i
+		if(index = i) then
+			m.screen.DrawObject(24 + x%, 400, content.form_sel)
+			m.screen.DrawObject(137 + x%, 420, content.icon_sel[i])
+		else
+			m.screen.DrawObject(24 + x%, 400, content.form)
+			m.screen.DrawObject(137 + x%, 420, content.icon[i])
+		end if	
+		
+		color = content.color_text
+		if(index = i) then
+			color = content.color_text_sel
+		end if	
+		
+		text = content.menu[i].row_1
+		fw = content.font_menu.GetOneLineWidth(text, m.screen.GetWidth())
+		x% = 314 * i + (290 - fw) / 2
+		m.screen.DrawText(text, 24 + x%, 510, color, content.font_menu)
+		
+		text = content.menu[i].row_2
+		fw = content.font_menu.GetOneLineWidth(text, m.screen.GetWidth())
+		x% = 314 * i + (290 - fw) / 2
+		m.screen.DrawText(text, 24 + x%, 540, color, content.font_menu)
+		
+		text = content.coment[i].row_1
+		fw = content.font_coment.GetOneLineWidth(text, m.screen.GetWidth())
+		x% = 314 * i + (290 - fw) / 2
+		m.screen.DrawText(text, 24 + x%, 596, color, content.font_coment)
+		
+		text = content.coment[i].row_2
+		fw = content.font_coment.GetOneLineWidth(text, m.screen.GetWidth())
+		x% = 314 * i + (290 - fw) / 2
+		m.screen.DrawText(text, 24 + x%, 620, color, content.font_coment)
+		
+		x% = 44 + (314 * i)
+		m.screen.DrawObject(x%, 580, content.line)
+		
+	end for
     
-    m.screen.DrawObject(24, 400, m.form)
-    m.screen.DrawObject(338, 400, m.form)
-    m.screen.DrawObject(652, 400, m.form)
-    m.screen.DrawObject(966, 400, m.form)
+    m.screen.SwapBuffers()
     
-    fw = m.fonta.GetOneLineWidth(m.set_punkt_1, m.screen.GetWidth())
-    x% = (290 - fw) / 2
-    m.screen.DrawText(m.set_punkt_1, 24 + x%, 520, &hebebebff, m.fonta)
-    fw = m.fonta.GetOneLineWidth(m.set_punkt_2, m.screen.GetWidth())
-    x% = (290 - fw) / 2
-    m.screen.DrawText(m.set_punkt_2, 338 + x%, 520, &hebebebff, m.fonta)
-    fw = m.fonta.GetOneLineWidth(m.set_punkt_3, m.screen.GetWidth())
-    x% = (290 - fw) / 2
-    m.screen.DrawText(m.set_punkt_3, 652 + x%, 520, &hebebebff, m.fonta)
-    fw = m.fonta.GetOneLineWidth(m.set_punkt_4, m.screen.GetWidth())
-    x% = (290 - fw) / 2
-    m.screen.DrawText(m.set_punkt_4, 966 + x%, 520, &hebebebff, m.fonta)
-    
-    m.screen.Finish()
-    
-end function
-
-function DrawSettingSelect()
-
-    x = 314 * m.set_index  
-    m.screen.DrawObject(24 + x, 400, m.form_sel)
-    if(m.set_index = 0) then
-        m.screen.DrawObject(137, 420, m.avatar_sel)
-        fw = m.fonta.GetOneLineWidth(m.set_punkt_1, m.screen.GetWidth())
-        x% = (290 - fw) / 2
-        m.screen.DrawText(m.set_punkt_1, 24 + x%, 520, &h000000ff, m.fonta)
-    else if(m.set_index = 1) then
-        m.screen.DrawObject(451, 420, m.notebook_sel)
-        fw = m.fonta.GetOneLineWidth(m.set_punkt_2, m.screen.GetWidth())
-        x% = (290 - fw) / 2
-        m.screen.DrawText(m.set_punkt_2, 338 + x%, 520, &h000000ff, m.fonta)
-    else if(m.set_index = 2) then
-        m.screen.DrawObject(765, 420, m.tablet_sel)
-        fw = m.fonta.GetOneLineWidth(m.set_punkt_3, m.screen.GetWidth())
-        x% = (290 - fw) / 2
-        m.screen.DrawText(m.set_punkt_3, 652 + x%, 520, &h000000ff, m.fonta)
-    else if(m.set_index = 3) then
-        m.screen.DrawObject(1079, 420, m.umbrella_sel)
-        fw = m.fonta.GetOneLineWidth(m.set_punkt_4, m.screen.GetWidth())
-        x% = (290 - fw) / 2
-        m.screen.DrawText(m.set_punkt_4, 966 + x%, 520, &h000000ff, m.fonta)
-    end if
-         
-    m.screen.Finish()
-
 end function
